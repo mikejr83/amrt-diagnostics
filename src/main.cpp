@@ -1,18 +1,105 @@
-#include <Arduino.h>
+/**************************************************************************
+ This is an example for our Monochrome OLEDs based on SSD1306 drivers
 
-// put function declarations here:
-int myFunction(int, int);
+ Pick one up today in the adafruit shop!
+ ------> http://www.adafruit.com/category/63_98
+
+ This example is for a 128x32 pixel display using I2C to communicate
+ 3 pins are required to interface (two I2C and one reset).
+
+ Adafruit invests time and resources providing this open
+ source code, please support Adafruit and open-source
+ hardware by purchasing products from Adafruit!
+
+ Written by Limor Fried/Ladyada for Adafruit Industries,
+ with contributions from the open source community.
+ BSD license, check license.txt for more information
+ All text above, and the splash screen below must be
+ included in any redistribution.
+ **************************************************************************/
+#include "settings.h"
+
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#include "uiTests.h"
+#include "logo.h"
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+
+
+
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  Serial.begin(9600);
+
+  pinMode(RX_PIN_IN, INPUT);
+
+  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+  if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;); // Don't proceed, loop forever
+  }
+
+  // Show initial display buffer contents on the screen --
+  // the library initializes this with an Adafruit splash screen.
+  display.display();
+  delay(2000); // Pause for 2 seconds
+
+  Serial.println(F("Clearing display"));
+
+  // Clear the buffer
+  display.clearDisplay();
+
+  // Draw a single pixel in white
+  display.drawPixel(10, 10, SSD1306_WHITE);
+
+  // Show the display buffer on the screen. You MUST call display() after
+  // drawing commands to make them visible on screen!
+  display.display();
+  delay(2000);
+  // display.display() is NOT necessary after every single drawing command,
+  // unless that's what you want...rather, you can batch up a bunch of
+  // drawing operations and then update the screen all at once by calling
+  // display.display(). These examples demonstrate both approaches...
+
+  testdrawline(display);      // Draw many lines
+
+  testdrawrect(display);      // Draw rectangles (outlines)
+
+  testfillrect(display);      // Draw rectangles (filled)
+
+  testdrawcircle(display);    // Draw circles (outlines)
+
+  testfillcircle(display);    // Draw circles (filled)
+
+  testdrawroundrect(display); // Draw rounded rectangles (outlines)
+
+  testfillroundrect(display); // Draw rounded rectangles (filled)
+
+  testdrawtriangle(display);  // Draw triangles (outlines)
+
+  testfilltriangle(display);  // Draw triangles (filled)
+
+  testdrawchar(display);      // Draw characters of the default font
+
+  testdrawstyles(display);    // Draw 'stylized' characters
+
+  testscrolltext(display);    // Draw scrolling text
+
+  testdrawbitmap(display, logo_bmp);    // Draw a small bitmap image
+
+  // Invert and restore display, pausing in-between
+  display.invertDisplay(true);
+  delay(1000);
+  display.invertDisplay(false);
+  delay(1000);
+
+  testanimate(display, logo_bmp, LOGO_WIDTH, LOGO_HEIGHT); // Animate bitmaps
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
-
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
 }
