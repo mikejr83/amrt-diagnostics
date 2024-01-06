@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ArduinoLog.h>
+
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 32 // OLED display height, in pixels
 
@@ -21,3 +23,8 @@
 #define DELTAY 2
 
 #define RX_PIN_IN 2
+
+#define LOG_LEVEL LOG_LEVEL_TRACE
+// #define LOG_LEVEL LOG_LEVEL_NOTICE
+// #define LOG_LEVEL LOG_LEVEL_INFO
+#define DISABLE_LOGGING 

@@ -18,88 +18,96 @@
  included in any redistribution.
  **************************************************************************/
 #include "settings.h"
+#include "utilities.h"
 
+#include <Arduino.h>
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <stdlib.h>
+#include <ArduinoLog.h>
 
 #include "uiTests.h"
 #include "logo.h"
 
+void rxPulseTimer();
+
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+volatile long startTime = 0;
+volatile long currentTime = 0;
+volatile long rxPulses = 0;
+int pulseWidth = 0;
 
+void displayStatus(long rxValue, long amrtValue)
+{
+  char rxValBuffer[10];
+  char amrtValBuffer[10];
 
+  itoa(rxValue, rxValBuffer, 10);
+  itoa(amrtValue, amrtValBuffer, 10);
 
+  Log.noticeln("RX Value: %s", rxValBuffer);
+  Log.noticeln("AMRT Value: %s", amrtValBuffer);
 
-void setup() {
+  display.clearDisplay();
+
+  display.setTextSize(1);              // Normal 1:1 pixel scale
+  display.setTextColor(SSD1306_WHITE); // Draw white text
+  display.cp437(true);                 // Use full 256 char 'Code Page 437' font
+
+  display.setCursor(0, 0); // Start at top-left corner
+  display.write("From Receiver: ");
+  display.write(rxValBuffer);
+
+  display.setCursor(0, 8);
+  display.write("From AMRT: ");
+  display.write(amrtValBuffer);
+
+  display.display();
+}
+
+void setup()
+{
   Serial.begin(9600);
 
-  pinMode(RX_PIN_IN, INPUT);
+#ifndef DISABLE_LOGGING
+  Log.begin(LOG_LEVEL, &Serial);
+#endif
+
+  pinMode(RX_PIN_IN, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(RX_PIN_IN), rxPulseTimer, CHANGE);
 
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
-  if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+  if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
+  {
     Serial.println(F("SSD1306 allocation failed"));
-    for(;;); // Don't proceed, loop forever
+    for (;;)
+      ; // Don't proceed, loop forever
   }
-
-  // Show initial display buffer contents on the screen --
-  // the library initializes this with an Adafruit splash screen.
-  display.display();
-  delay(2000); // Pause for 2 seconds
-
-  Serial.println(F("Clearing display"));
 
   // Clear the buffer
   display.clearDisplay();
 
-  // Draw a single pixel in white
-  display.drawPixel(10, 10, SSD1306_WHITE);
-
-  // Show the display buffer on the screen. You MUST call display() after
-  // drawing commands to make them visible on screen!
-  display.display();
-  delay(2000);
-  // display.display() is NOT necessary after every single drawing command,
-  // unless that's what you want...rather, you can batch up a bunch of
-  // drawing operations and then update the screen all at once by calling
-  // display.display(). These examples demonstrate both approaches...
-
-  testdrawline(display);      // Draw many lines
-
-  testdrawrect(display);      // Draw rectangles (outlines)
-
-  testfillrect(display);      // Draw rectangles (filled)
-
-  testdrawcircle(display);    // Draw circles (outlines)
-
-  testfillcircle(display);    // Draw circles (filled)
-
-  testdrawroundrect(display); // Draw rounded rectangles (outlines)
-
-  testfillroundrect(display); // Draw rounded rectangles (filled)
-
-  testdrawtriangle(display);  // Draw triangles (outlines)
-
-  testfilltriangle(display);  // Draw triangles (filled)
-
-  testdrawchar(display);      // Draw characters of the default font
-
-  testdrawstyles(display);    // Draw 'stylized' characters
-
-  testscrolltext(display);    // Draw scrolling text
-
-  testdrawbitmap(display, logo_bmp);    // Draw a small bitmap image
-
-  // Invert and restore display, pausing in-between
-  display.invertDisplay(true);
-  delay(1000);
-  display.invertDisplay(false);
-  delay(1000);
-
-  testanimate(display, logo_bmp, LOGO_WIDTH, LOGO_HEIGHT); // Animate bitmaps
+  Log.infoln(F("Set-up complete"));
+  Serial.flush();
 }
 
-void loop() {
+void loop()
+{
+  if (rxPulses > 750 && rxPulses <= 2200)
+  {
+    displayStatus(rxPulses, 1200);
+  }
+}
+
+void rxPulseTimer()
+{
+  currentTime = micros();
+  if (currentTime > startTime)
+  {
+    rxPulses = currentTime - startTime;
+    startTime = currentTime;
+  }
 }
