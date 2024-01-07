@@ -23,8 +23,11 @@
 #define DELTAY 2
 
 #define RX_PIN_IN 2
+#define AMRT_PIN_IN 3
+
+#define REFRESH_RATE 250
 
 #define LOG_LEVEL LOG_LEVEL_TRACE
 // #define LOG_LEVEL LOG_LEVEL_NOTICE
 // #define LOG_LEVEL LOG_LEVEL_INFO
-#define DISABLE_LOGGING 
+// #define DISABLE_LOGGING 
