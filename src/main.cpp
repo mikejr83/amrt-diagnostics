@@ -51,12 +51,12 @@ void loop()
   unsigned long currentRxOutput = recieverInput.getPulseRaw();
   unsigned long currentAmrtOutput = amrtInput.getPulseRaw();
 
-  if (currentRxOutput > 850 && currentRxOutput < 2250)
+  if (currentRxOutput > MIN_PWM_SIGNAL && currentRxOutput < 2250)
   {
     rxOutput = currentRxOutput;
   }
 
-  if (currentAmrtOutput > 850 && currentAmrtOutput < 2250)
+  if (currentAmrtOutput > MIN_PWM_SIGNAL && currentAmrtOutput < 2250)
   {
     amrtOutput = currentAmrtOutput;
   }

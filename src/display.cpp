@@ -1,3 +1,4 @@
+#include "settings.h"
 #include "display.h"
 
 #include <ArduinoLog.h>
@@ -38,11 +39,13 @@ void showStartup(Adafruit_SSD1306 display)
     display.clearDisplay();
 
     scrollText(display, true, "Carl's Recycled Airplane Parts");
-
+    delay(1000);
     scrollText(display, false, "AMRT Diagnosis Tool");
 
     delay(1000);
 }
+
+const char *empty = "\0";
 
 void displayStatus(Adafruit_SSD1306 display, long rxValue, long amrtValue)
 {
@@ -51,9 +54,6 @@ void displayStatus(Adafruit_SSD1306 display, long rxValue, long amrtValue)
 
     itoa(rxValue, rxValBuffer, 10);
     itoa(amrtValue, amrtValBuffer, 10);
-
-    // Log.noticeln("RX Value: %s", rxValBuffer);
-    // Log.noticeln("AMRT Value: %s", amrtValBuffer);
 
     display.clearDisplay();
 
@@ -68,6 +68,46 @@ void displayStatus(Adafruit_SSD1306 display, long rxValue, long amrtValue)
     display.setCursor(0, 8);
     display.write("From AMRT: ");
     display.write(amrtValBuffer);
+
+    const char *lineOne, *lineTwo;
+
+    if (rxValue < MIN_PWM_SIGNAL)
+    {
+        Log.traceln("Showing no rx input");
+        lineOne = "No RX Input!";
+    }
+    else
+    {
+        lineOne = empty;
+    }
+
+    if (amrtValue < MIN_PWM_SIGNAL)
+    {
+        if (strlen(lineOne) > 0)
+        {
+            lineTwo = "No AMRT Input!";
+        }
+        else
+        {
+            lineOne = "No AMRT Input!";
+        }
+    }
+    else
+    {
+        lineTwo = empty;
+    }
+
+    if (strlen(lineOne) > 0)
+    {
+        display.setCursor(0, 16);
+        display.write(lineOne);
+    }
+
+    if (strlen(lineTwo) > 0)
+    {
+        display.setCursor(0, 24);
+        display.write(lineTwo);
+    }
 
     display.display();
 }
